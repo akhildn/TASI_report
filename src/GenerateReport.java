@@ -145,6 +145,5 @@ public class GenerateReport {
             String exit = in.next();
             System.exit(1);
         }
-
     }
 }
