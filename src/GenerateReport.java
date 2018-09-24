@@ -145,7 +145,7 @@ public class GenerateReport {
             final int NUM_OF_ROW = 12;
 
             Drawing drawing = reportSheet.createDrawingPatriarch();
-            ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, NUM_OF_COL + 2, 20, NUM_OF_COL + 15, 40);
+            ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 2, 20, 20, 40);
 
             Chart chart = ((XSSFDrawing) drawing).createChart(anchor);
             ChartLegend legend = chart.getOrCreateLegend();
