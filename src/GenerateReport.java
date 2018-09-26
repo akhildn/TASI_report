@@ -1,6 +1,7 @@
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.charts.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTBoolean;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTLineSer;
@@ -77,7 +78,7 @@ public class GenerateReport {
             //reads report sheet
             XSSFSheet reportSheet = outputWorkbook.getSheet("Report");
             //calculates stats from week sheet
-            for(int row = 0; row <13; row++ ){
+            for(int row = 0; row <14; row++ ){
                 Row readRow = reportSheet.getRow(row);
                 Cell writeCell = readRow.createCell(numSheets);
 
@@ -127,8 +128,16 @@ public class GenerateReport {
                     String formula = "COUNTIFS("+weekName+"!D2:D"+(numRows+1) +",\"\")";
                     writeCell.setCellType(CellType.FORMULA);
                     writeCell.setCellFormula(formula);
-                }else{
-                    String formula = "COUNT("+weekName+"!A2:A3000)";
+                }else if(row == 12){
+                    int colNumber = reportSheet.getRow(0).getLastCellNum();
+                    String columnLetter = CellReference.convertNumToColString(colNumber-1);
+                    String formula = columnLetter+"3+"+columnLetter+"5+"+columnLetter+"6+"+columnLetter+"7+"+columnLetter+"8+"+columnLetter+"9";
+                    writeCell.setCellType(CellType.FORMULA);
+                    writeCell.setCellFormula(formula);
+                }else if(row == 13){
+                    int colNumber = reportSheet.getRow(0).getLastCellNum();
+                    String columnLetter = CellReference.convertNumToColString(colNumber-1);
+                    String formula = columnLetter+"10+"+columnLetter+"11";
                     writeCell.setCellType(CellType.FORMULA);
                     writeCell.setCellFormula(formula);
                 }
@@ -155,13 +164,21 @@ public class GenerateReport {
             ValueAxis leftAxis = chart.getChartAxisFactory().createValueAxis(AxisPosition.LEFT);
             leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
 
-            ChartDataSource<Number> xs = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(0, NUM_OF_ROW - 1, 0, 0));
+            ChartDataSource<Number> xs = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(0, 0, 0, NUM_OF_COL-1));
 
-            for(int i=1; i<NUM_OF_COL; i++){
-                ChartDataSource<Number> ys = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(0, NUM_OF_ROW - 1, i, i));
+            /*for(int i=1; i<NUM_OF_ROW; i++){
+                ChartDataSource<Number> ys = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(i,i, 1, NUM_OF_COL-1));
                 LineChartSeries series1 = data.addSeries(xs, ys);
-                series1.setTitle(weekName);
-            }
+                series1.setTitle(reportSheet.getRow(i).getCell(0).getStringCellValue());
+            }*/
+
+            ChartDataSource<Number> recorded = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(12,12, 0, NUM_OF_COL-1));
+            LineChartSeries series1 = data.addSeries(xs, recorded);
+            series1.setTitle(reportSheet.getRow(12).getCell(0).getStringCellValue());
+
+            ChartDataSource<Number> uploaded = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(13,13, 0, NUM_OF_COL-1));
+            LineChartSeries series2 = data.addSeries(xs, uploaded);
+            series2.setTitle(reportSheet.getRow(13).getCell(0).getStringCellValue());
 
             chart.plot(data, bottomAxis, leftAxis);
 
