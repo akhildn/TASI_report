@@ -1,5 +1,10 @@
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.charts.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
+import org.openxmlformats.schemas.drawingml.x2006.chart.CTBoolean;
+import org.openxmlformats.schemas.drawingml.x2006.chart.CTLineSer;
+import org.openxmlformats.schemas.drawingml.x2006.chart.CTPlotArea;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -7,6 +12,8 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class GenerateReport {
+
+
     public static void main(String args[]){
         try{
 
@@ -131,6 +138,48 @@ public class GenerateReport {
             outputWorkbook.write(oFOS);
             System.out.println(weekName + " : Report appended");
             oFOS.close();
+
+            /*****************************************************************************************************/
+
+            final int NUM_OF_COL = reportSheet.getRow(0).getLastCellNum();
+            final int NUM_OF_ROW = 12;
+
+            Drawing drawing = reportSheet.createDrawingPatriarch();
+            ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 2, 20, 20, 40);
+
+            Chart chart = ((XSSFDrawing) drawing).createChart(anchor);
+            ChartLegend legend = chart.getOrCreateLegend();
+            legend.setPosition(LegendPosition.RIGHT);
+            LineChartData data = chart.getChartDataFactory().createLineChartData();
+            ChartAxis bottomAxis = chart.getChartAxisFactory().createCategoryAxis(AxisPosition.BOTTOM);
+            ValueAxis leftAxis = chart.getChartAxisFactory().createValueAxis(AxisPosition.LEFT);
+            leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            ChartDataSource<Number> xs = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(0, NUM_OF_ROW - 1, 0, 0));
+
+            for(int i=1; i<NUM_OF_COL; i++){
+                ChartDataSource<Number> ys = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(0, NUM_OF_ROW - 1, i, i));
+                LineChartSeries series1 = data.addSeries(xs, ys);
+                series1.setTitle(weekName);
+            }
+
+            chart.plot(data, bottomAxis, leftAxis);
+
+            XSSFChart xssfChart = (XSSFChart) chart;
+            CTPlotArea plotArea = xssfChart.getCTChart().getPlotArea();
+            plotArea.getLineChartArray()[0].getSmooth();
+            CTBoolean ctBool = CTBoolean.Factory.newInstance();
+            ctBool.setVal(false);
+            plotArea.getLineChartArray()[0].setSmooth(ctBool);
+            for (CTLineSer ser : plotArea.getLineChartArray()[0].getSerArray()) {
+                ser.setSmooth(ctBool);
+            }
+
+            oFOS = new FileOutputStream(outputFile);
+            outputWorkbook.write(oFOS);
+            System.out.println(weekName + " : Graph appended");
+            oFOS.close();
+
 
             System.out.println("Press any key and press enter to quit");
             Scanner in = new Scanner(System.in);
