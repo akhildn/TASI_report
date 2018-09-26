@@ -163,15 +163,6 @@ public class GenerateReport {
                 series1.setTitle(weekName);
             }
 
-            /*ChartDataSource<Number> ys2 = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(0, NUM_OF_ROW - 1, 2, 2));
-            ChartDataSource<Number> ys3 = DataSources.fromNumericCellRange(reportSheet, new CellRangeAddress(0, NUM_OF_ROW - 1, 3, 3));*/
-
-
-           /* LineChartSeries series2 = data.addSeries(xs, ys2);
-            series2.setTitle("two");
-            LineChartSeries series3 = data.addSeries(xs, ys3);
-            series3.setTitle("three");*/
-
             chart.plot(data, bottomAxis, leftAxis);
 
             XSSFChart xssfChart = (XSSFChart) chart;
